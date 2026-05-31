@@ -1,0 +1,54 @@
+package com.cosmix.app.metaproviders
+
+import com.cosmix.app.CsxApi
+import com.cosmix.app.mvvm.safeAsync
+import com.cosmix.app.syncproviders.SyncIdName
+
+object SyncRedirector {
+    private val syncIds =
+        listOf(
+            SyncIdName.MyAnimeList to Regex("""myanimelist\.net/anime/(\d+)"""),
+            SyncIdName.Anilist to Regex("""anilist\.co/anime/(\d+)""")
+        )
+
+    suspend fun redirect(
+        url: String,
+        providerApi: CsxApi
+    ): String {
+        // Deprecated since providers should do this instead!
+
+        // Tries built in ID -> ProviderUrl
+        /*
+        for (api in syncApis) {
+            if (url.contains(api.mainUrl)) {
+                val otherApi = when (api.name) {
+                    aniListApi.name -> "anilist"
+                    malApi.name -> "myanimelist"
+                    else -> return url
+                }
+
+                SyncUtil.getUrlsFromId(api.getIdFromUrl(url), otherApi).firstOrNull { realUrl ->
+                    realUrl.contains(providerApi.mainUrl)
+                }?.let {
+                    return it
+                }
+//                ?: run {
+//                    throw ErrorLoadingException("Page does not exist on $preferredUrl")
+//                }
+            }
+        }
+        */
+
+        // Tries provider solution
+        // This goes through all sync ids and finds supported id by said provider
+        return syncIds.firstNotNullOfOrNull { (syncName, syncRegex) ->
+            if (providerApi.supportedSyncNames.contains(syncName)) {
+                syncRegex.find(url)?.value?.let {
+                    safeAsync {
+                        providerApi.getLoadUrl(syncName, it)
+                    }
+                }
+            } else null
+        } ?: url
+    }
+}
