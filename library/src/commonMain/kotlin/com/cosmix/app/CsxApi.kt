@@ -604,7 +604,7 @@ abstract class CsxApi {
      **/
     open val supportedSyncNames = setOf<SyncIdName>()
 
-    open val supportedTypes = setOf(
+    open var supportedTypes = setOf(
         TvType.Movie,
         TvType.TvSeries,
         TvType.Cartoon,
@@ -616,7 +616,7 @@ abstract class CsxApi {
     open val providerType = ProviderType.DirectProvider
 
     //emptyList<MainPageData>() //
-    open val mainPage = listOf(MainPageData("", "", false))
+    open var mainPage = listOf(MainPageData("", "", false))
 
     // @WorkerThread
     open suspend fun getMainPage(
